@@ -1,0 +1,16 @@
+{
+  "name": "记账",
+  "short_name": "记账",
+  "description": "给长辈用的极简记账：打开就记，不分类、不图表",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f7",
+  "theme_color": "#ffffff",
+  "orientation": "portrait",
+  "lang": "zh-CN",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}
