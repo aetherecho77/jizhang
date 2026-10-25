@@ -1,7 +1,7 @@
 {
-  "name": "记账",
-  "short_name": "记账",
-  "description": "给长辈用的极简记账：打开就记，不分类、不图表",
+  "name": "随手记",
+  "short_name": "随手记",
+  "description": "想记什么就写什么：一句话、一件事、买了多少钱",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
