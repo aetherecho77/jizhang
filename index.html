@@ -65,6 +65,8 @@ textarea,input,button{font-family:inherit}
 .foot .sum{font-size:16px;color:#8e8e93}
 .foot .sum b{font-size:21px;color:#1c1c1e}
 .mini{border:0;background:transparent;color:#aeaeb2;font-size:13px;padding:8px}
+.foot .acts{display:flex;gap:4px;flex:0 0 auto}
+.foot .acts .mini{border:1px solid #e5e5ea;border-radius:9px;color:#3a3a3c;background:#fff;padding:8px 12px;font-size:14px;font-weight:600}
 .tip{margin:12px 2px 0;font-size:13px;color:#f59e0b;display:none}
 </style>
 </head>
@@ -103,9 +105,13 @@ textarea,input,button{font-family:inherit}
 <div class="foot">
   <div class="in">
     <div class="sum" id="sum"></div>
-    <button class="mini" id="backup">备份</button>
+    <div class="acts">
+      <button class="mini" id="backup">存一份</button>
+      <button class="mini" id="restore">恢复</button>
+    </div>
   </div>
 </div>
+<input id="file" type="file" accept=".txt,.json,application/json" style="display:none">
 <script>
 (function () {
   var KEY = 'jz_v2', DRAFT = 'jz_draft', OLD = 'jz_v1';
@@ -335,6 +341,47 @@ textarea,input,button{font-family:inherit}
     if (!recs.length) { alert('还没记过，不用备份'); return; }
     var data = JSON.stringify({ app: 'suishouji', v: 2, exportedAt: new Date().toISOString(), records: recs }, null, 1);
     if (!download('随手记备份-' + dayKey(Date.now()) + '.txt', data, 'application/json')) alert('这台手机不支持直接下载');
+  };
+
+  $('restore').onclick = function () { $('file').click(); };
+  $('file').onchange = function () {
+    var f = this.files && this.files[0];
+    if (!f) return;
+    var fr = new FileReader();
+    fr.onload = function (e) {
+      var arr = null;
+      try {
+        var raw = String(e.target.result).replace(/^\ufeff/, '');
+        var o = JSON.parse(raw);
+        arr = Array.isArray(o) ? o : (o && Array.isArray(o.records) ? o.records : null);
+      } catch (err) { alert('这个文件读不出来，可能不是随手记的备份。'); return; }
+      if (!arr) { alert('这个文件不像随手记的备份。'); return; }
+      var good = arr.filter(function (r) { return r && typeof r.ts === 'number' && typeof r.text === 'string' && r.text; });
+      if (!good.length) { alert('备份里没有能读的记录。'); return; }
+      var seen = {};
+      recs.forEach(function (r) { seen[r.ts + '|' + r.text] = 1; });
+      var add = 0;
+      good.forEach(function (r) {
+        var k = r.ts + '|' + r.text;
+        if (seen[k]) return;
+        seen[k] = 1;
+        var t = String(r.text).slice(0, 2000);
+        recs.push({
+          id: String(r.ts) + Math.random().toString(36).slice(2, 6),
+          ts: r.ts,
+          text: t,
+          amount: typeof r.amount === 'number' ? r.amount : parseAmount(t),
+          amtOff: false
+        });
+        add++;
+      });
+      if (!add) { alert('备份里 ' + good.length + ' 条都已经有了，没有新增。'); return; }
+      if (!save()) return;
+      alert('恢复好了：新增 ' + add + ' 条，现在一共 ' + recs.length + ' 条。');
+      render();
+    };
+    fr.readAsText(f, 'utf-8');
+    this.value = '';
   };
 
   load();
